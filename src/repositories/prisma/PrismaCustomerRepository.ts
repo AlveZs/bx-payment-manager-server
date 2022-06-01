@@ -6,6 +6,7 @@ import {
   CustomerUpdateData,
   CustomerRepository,
 } from "../CustomerRepository";
+import { ERRORS_MESSAGES } from "../../constants/Errors";
 
 export class PrismaCustomerRepository implements CustomerRepository {
   async create({
@@ -39,19 +40,28 @@ export class PrismaCustomerRepository implements CustomerRepository {
       address
     }: CustomerUpdateData
   ) {
-    await prisma.customer.update({
-      where: {
-        uuid: customerUuid,
-      },
-      data: {
-        name,
-        userName,
-        number,
-        password,
-        wifiPassword,
-        address,
+    try {
+      await prisma.customer.update({
+        where: {
+          uuid: customerUuid,
+        },
+        data: {
+          name,
+          userName,
+          number,
+          password,
+          wifiPassword,
+          address,
+        }
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2025') {
+          throw new Error(ERRORS_MESSAGES.CUSTOMER_NOT_FOUND);
+        }
       }
-    });
+      throw error;
+    }
   }
 
   async delete(customerUuid: string) {
@@ -67,7 +77,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {
-          throw new Error("Customer not found");
+          throw new Error(ERRORS_MESSAGES.CUSTOMER_NOT_FOUND);
         }
       }
       throw error;

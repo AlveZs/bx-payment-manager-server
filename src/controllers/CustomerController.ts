@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { ERRORS_MESSAGES } from '../constants/Errors';
 import { PrismaCustomerRepository } from '../repositories/prisma/PrismaCustomerRepository';
 import { CreateCustomerUseCase } from '../use-cases/Customer/CreateCustomerUseCase';
 import { DeleteCustomerUseCase } from '../use-cases/Customer/DeleteCustomerUseCase';
@@ -22,17 +23,23 @@ class CustomerController {
     const createCustomerUseCase = new CreateCustomerUseCase(
       prismaCustomerRepository
     );
+
+    try {
+      await createCustomerUseCase.execute({
+        name,
+        number,
+        userName,
+        password,
+        wifiPassword,
+        address
+      });
+    } catch (error) {
+      if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {
+        return response.status(400).send();
+      }
+    }
   
-    await createCustomerUseCase.execute({
-      name,
-      number,
-      userName,
-      password,
-      wifiPassword,
-      address
-    });
-  
-    return response.status(201);
+    return response.status(201).send();
   }
 
   async update(request: Request, response: Response) {
@@ -52,17 +59,25 @@ class CustomerController {
     const updateCustomerUseCase = new UpdateCustomerUseCase(
       prismaCustomerRepository
     );
-  
-    await updateCustomerUseCase.execute(
-    customerUuid,
-    {
-      name,
-      number,
-      userName,
-      password,
-      wifiPassword,
-      address
-    });
+
+    try {
+      await updateCustomerUseCase.execute(
+        customerUuid,
+        {
+          name,
+          number,
+          userName,
+          password,
+          wifiPassword,
+          address
+        });
+    } catch (error) {
+      if (error instanceof Error && error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {
+        return response.status(422).send();
+      }
+
+      return response.status(500).send();
+    }
   
     return response.status(200).send();
   }
@@ -91,8 +106,11 @@ class CustomerController {
     try {
       await deleteCustomerUseCase.execute(customerUuid);
     } catch (error) {
-      console.log(error)
-      return response.status(500).send()
+      if (error instanceof Error && error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {
+        return response.status(422).send();
+      }
+
+      return response.status(500).send();
     }
   
     return response.status(200).send()
