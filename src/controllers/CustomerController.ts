@@ -37,6 +37,8 @@ class CustomerController {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {
         return response.status(400).send();
       }
+
+      return response.status(500).send();
     }
   
     return response.status(201).send();

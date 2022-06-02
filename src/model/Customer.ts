@@ -1,7 +1,8 @@
 import { Payment } from "./Payment";
 
 export interface Customer {
-  uuid: string;
+  id?: number;
+  uuid?: string;
   name: string;
   number: number;
   userName: string;

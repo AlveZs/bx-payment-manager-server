@@ -89,6 +89,9 @@ export class PrismaCustomerRepository implements CustomerRepository {
       where: {
         uuid: customerUuid,
       },
+      include: {
+        payments: true,
+      },
     });
 
     return customer;
