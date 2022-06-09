@@ -12,3 +12,5 @@ node_modules
 dev.db*
 *tmp.db
 .prisma
+
+/coverage
