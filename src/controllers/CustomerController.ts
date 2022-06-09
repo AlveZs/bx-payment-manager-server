@@ -11,11 +11,13 @@ class CustomerController {
   async create(request: Request, response: Response) {
     const {
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     } = request.body
   
     const prismaCustomerRepository = new PrismaCustomerRepository();
@@ -24,14 +26,16 @@ class CustomerController {
       prismaCustomerRepository
     );
 
-    try {
+    try {      
       await createCustomerUseCase.execute({
         name,
+        nickname,
         number,
         userName,
         password,
         wifiPassword,
-        address
+        address,
+        phone
       });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {
@@ -47,11 +51,13 @@ class CustomerController {
   async update(request: Request, response: Response) {
     const {
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     } = request.body
   
     const customerUuid = request.params.customerUuid
@@ -67,11 +73,13 @@ class CustomerController {
         customerUuid,
         {
           name,
+          nickname,
           number,
           userName,
           password,
           wifiPassword,
-          address
+          address,
+          phone
         });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {

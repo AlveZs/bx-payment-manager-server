@@ -2,20 +2,24 @@ import { Customer } from "@prisma/client";
 
 export interface CustomerCreateData {
   name: string;
+  nickname?: string;
   number: number;
   userName: string;
   password: string;
   wifiPassword?: string;
   address?: string;
+  phone?: string;
 }
 
 export interface CustomerUpdateData {
   name: string;
+  nickname?: string;
   number: number;
   userName: string;
   password: string;
   wifiPassword?: string;
   address?: string;
+  phone?: string;
 }
 
 export interface CustomerRepository {

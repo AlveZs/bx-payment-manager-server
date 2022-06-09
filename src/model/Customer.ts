@@ -4,6 +4,8 @@ export interface Customer {
   id?: number;
   uuid?: string;
   name: string;
+  nickname?: string;
+  phone?: string;
   number: number;
   userName: string;
   password: string;

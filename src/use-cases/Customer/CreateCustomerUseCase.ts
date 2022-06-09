@@ -5,11 +5,13 @@ import { isNullOrEmpty } from "../../utils/Validator";
 
 export interface CreateCustomerUseCaseRequest {
   name: string;
+  nickname?: string;
   number: number;
   userName: string;
   password: string;
   wifiPassword?: string;
   address?: string;
+  phone?: string;
 }
 
 export class CreateCustomerUseCase {
@@ -21,18 +23,20 @@ export class CreateCustomerUseCase {
   async execute(request: CreateCustomerUseCaseRequest) {
     const {
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     } = request;
 
     const requiredFieldsNull = [
       name,
       number,
       userName,
-      password
+      password,
     ].filter(isNullOrEmpty);
 
     if(requiredFieldsNull.length > 0) {
@@ -41,11 +45,13 @@ export class CreateCustomerUseCase {
 
     await this.customerRepository.create({
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     });
   }
 }

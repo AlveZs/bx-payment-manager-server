@@ -11,6 +11,8 @@ model Customer {
   id           Int       @id @default(autoincrement())
   uuid         String    @unique @default(uuid())
   name         String
+  nickname     String?
+  phone        String?
   number       Int
   userName     String
   password     String

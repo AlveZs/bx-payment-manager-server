@@ -3,11 +3,13 @@ import { CustomerRepository } from "../../repositories/CustomerRepository";
 
 export interface UpdateCustomerUseCaseRequest {
   name: string;
+  nickname?: string;
   number: number;
   userName: string;
   password: string;
   wifiPassword?: string;
   address?: string;
+  phone?: string;
 }
 
 export class UpdateCustomerUseCase {
@@ -19,22 +21,26 @@ export class UpdateCustomerUseCase {
   async execute(customerUuid: string, request: UpdateCustomerUseCaseRequest) {
     const {
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     } = request;
 
     await this.customerRepository.update(
     customerUuid,
     {
       name,
+      nickname,
       number,
       userName,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     });
   }
 }

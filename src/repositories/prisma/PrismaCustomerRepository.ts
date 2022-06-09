@@ -12,19 +12,23 @@ export class PrismaCustomerRepository implements CustomerRepository {
   async create({
     name,
     userName,
+    nickname,
     number,
     password,
     wifiPassword,
-    address
+    address,
+    phone
   }: CustomerCreateData) {
     await prisma.customer.create({
       data: {
         name,
+        nickname,
         userName,
         number,
         password,
         wifiPassword,
-        address
+        address,
+        phone
       },
     });
   }
@@ -33,11 +37,13 @@ export class PrismaCustomerRepository implements CustomerRepository {
     customerUuid: string,
     {
       name,
+      nickname,
       userName,
       number,
       password,
       wifiPassword,
-      address
+      address,
+      phone
     }: CustomerUpdateData
   ) {
     try {
@@ -47,11 +53,13 @@ export class PrismaCustomerRepository implements CustomerRepository {
         },
         data: {
           name,
+          nickname,
           userName,
           number,
           password,
           wifiPassword,
           address,
+          phone
         }
       });
     } catch (error) {
@@ -98,7 +106,15 @@ export class PrismaCustomerRepository implements CustomerRepository {
   }
 
   async getAll(): Promise<Customer[]> {
-    const allCostumers = await prisma.customer.findMany();
+    const allCostumers = await prisma.customer.findMany({
+      include: {
+        payments: {          
+          orderBy: {
+            date: 'desc',
+          },
+        },
+      },
+    });
 
     return allCostumers;
   }
