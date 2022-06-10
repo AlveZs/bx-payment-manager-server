@@ -19,6 +19,10 @@ export interface PaymentRepository {
   update: (paymentUuid: string, data: PaymentUpdateData) => Promise<void>;
   delete: (paymentUuid: string) => Promise<void>;
   getByUuid: (paymentUuid: string) => Promise<Payment | null>;
-  getAllByCostumerId: (customerId: number) => Promise<Payment[] | null>;
-  getAll: () => Promise<Payment[]>;
+  getAllByCostumerId: (
+    customerId: number,
+    year?: number,
+    month?: number
+  ) => Promise<Payment[] | null>;
+  getAll: (year?: number) => Promise<Payment[]>;
 }

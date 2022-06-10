@@ -31,3 +31,5 @@ routes.get('/payments/:paymentUuid', paymentController.getByUuid);
 routes.get('/customers/:customerUuid/payments', paymentController.getByCustomer);
 
 routes.get('/payments', paymentController.getAll);
+
+routes.get('/dashboard', paymentController.getPaymentInfos);

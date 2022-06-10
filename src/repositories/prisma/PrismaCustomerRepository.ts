@@ -112,6 +112,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
           orderBy: {
             date: 'desc',
           },
+          take: 1,
         },
       },
     });

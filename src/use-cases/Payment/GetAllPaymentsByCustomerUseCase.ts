@@ -8,14 +8,18 @@ export class GetAllPaymentsByCustomerUseCase {
     private customerRepository: CustomerRepository,
   ) {}
 
-  async execute(customerUuid: string) {
+  async execute(customerUuid: string, year?: number, month?: number) {
     const customer = await this.customerRepository.getByUuid(customerUuid);
 
     if (customer === null) {
       return null;
     }
 
-    const allPayments = await this.paymentRepository.getAllByCostumerId(customer.id);
+    const allPayments = await this.paymentRepository.getAllByCostumerId(
+      customer.id,
+      year,
+      month
+    );
     
     return allPayments;
   }

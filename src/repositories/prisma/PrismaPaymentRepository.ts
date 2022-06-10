@@ -84,16 +84,39 @@ export class PrismaPaymentRepository implements PaymentRepository {
     return payment;
   }
 
-  async getAll(): Promise<Payment[]> {
-    const allPayments = await prisma.payment.findMany();
+  async getAll(year?: number): Promise<Payment[]> {
+    let whereCondition: any = {};
+
+    if (year) {
+      whereCondition.date = {
+        gte: new Date(year, 0, 1),
+        lte:  new Date(year, 12, 0),
+      }
+    }
+    
+    const allPayments = await prisma.payment.findMany({
+      where: whereCondition,
+    });
 
     return allPayments;
   }
 
-  async getAllByCostumerId(customerId: number): Promise<Payment[]> {
+  async getAllByCostumerId(customerId: number, year?: number, month?: number): Promise<Payment[]> {
+    let whereCondition: {customerId: number, date?: any} = {
+      customerId,
+    };
+
+    if (month) {
+      let yearFilter = year || new Date().getFullYear();
+      whereCondition.date = {
+        gte: new Date(yearFilter, month - 1, 1),
+        lte:  new Date(yearFilter, month, 0),
+      }
+    }
+
     const allCostumerPayments = await prisma.payment.findMany({
       where: {
-        customerId,
+        ...whereCondition
       },
     });
 
