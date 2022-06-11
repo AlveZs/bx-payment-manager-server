@@ -7,6 +7,7 @@ export interface AmountByMonth {
 
 export interface PaymentInfos {
   totalAmount: number;
+  totalAmountCurrentMonth: number;
   amountByMonth: any;
 }
 
@@ -28,6 +29,12 @@ export class PaymentDashboardInfosUseCase {
       return total + Number(value)
     }, 0) || 0;
 
+    const totalAmountCurrentMonth = payments?.filter(
+        payment => new Date(payment.date).getMonth() === new Date().getMonth()
+      ).reduce((total, { value }) => {
+        return total + Number(value)
+      }, 0) || 0;
+
     payments.forEach(payment => {
       const paymentDate = new Date(payment.date);
       months[paymentDate.getMonth() + 1] += Number(payment.value);
@@ -35,6 +42,7 @@ export class PaymentDashboardInfosUseCase {
     
     return {
       totalAmount,
+      totalAmountCurrentMonth,
       amountByMonth: months
     };
   }
