@@ -1,10 +1,13 @@
 import { Request, Response } from 'express';
 import { ERRORS_MESSAGES } from '../constants/Errors';
+import { Customer } from '../model/Customer';
 import { PrismaCustomerRepository } from '../repositories/prisma/PrismaCustomerRepository';
+import { PrismaPaymentRepository } from '../repositories/prisma/PrismaPaymentRepository';
 import { CreateCustomerUseCase } from '../use-cases/Customer/CreateCustomerUseCase';
 import { DeleteCustomerUseCase } from '../use-cases/Customer/DeleteCustomerUseCase';
 import { GetAllCustomersUseCase } from '../use-cases/Customer/GetAllCustomersUseCase';
 import { GetCustomerUseCase } from '../use-cases/Customer/GetCustomerUseCase';
+import { ImportCsvUseCase } from '../use-cases/Customer/ImportCsvUseCase';
 import { UpdateCustomerUseCase } from '../use-cases/Customer/UpdateCustomerUseCase';
 
 class CustomerController {
@@ -138,6 +141,25 @@ class CustomerController {
     const customer = await getCustomerUseCase.execute(customerUuid)
   
     return response.status(200).json({ Customer: customer }).send();
+  }
+
+  async importFromCsv(request: Request, response: Response) {
+    const prismaCustomerRepository = new PrismaCustomerRepository();
+  
+    const importCsvUseCase = new ImportCsvUseCase(
+      prismaCustomerRepository,
+    );
+
+    let costumers: Customer[] = [];
+
+    try {
+      costumers = await importCsvUseCase.execute();
+    } catch (error) {
+      console.log(error);
+      response.status(200).send(500);
+    }
+
+    return response.status(200).json({ ImportedCustomers: costumers }).send();
   }
 }
 

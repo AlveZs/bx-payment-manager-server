@@ -33,3 +33,5 @@ routes.get('/customers/:customerUuid/payments', paymentController.getByCustomer)
 routes.get('/payments', paymentController.getAll);
 
 routes.get('/dashboard', paymentController.getPaymentInfos);
+
+routes.get('/import-csv', customerController.importFromCsv);

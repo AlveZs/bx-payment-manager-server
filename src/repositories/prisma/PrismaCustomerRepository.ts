@@ -7,6 +7,7 @@ import {
   CustomerRepository,
 } from "../CustomerRepository";
 import { ERRORS_MESSAGES } from "../../constants/Errors";
+import { PaymentCreateData } from "../PaymentRepository";
 
 export class PrismaCustomerRepository implements CustomerRepository {
   async create({
@@ -28,9 +29,19 @@ export class PrismaCustomerRepository implements CustomerRepository {
         password,
         wifiPassword,
         address,
-        phone
+        phone,
       },
     });
+  }
+
+  async createMultipleWithPayments(
+    customers: CustomerCreateData[],
+  ) {
+    await prisma.$transaction(customers.map(customer => (
+      prisma.customer.create({
+        data: customer,
+      })
+    )));
   }
 
   async update(
@@ -108,7 +119,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
   async getAll(): Promise<Customer[]> {
     const allCostumers = await prisma.customer.findMany({
       include: {
-        payments: {          
+        payments: {
           orderBy: {
             date: 'desc',
           },

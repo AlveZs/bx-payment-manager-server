@@ -5,8 +5,8 @@ export interface Payment {
   uuid?: string;
   date: Date;
   value: number;
-  customerId: number;
-  customer: Customer;
+  customerId?: number;
+  customer?: Customer;
   description?: string;
   type?: string;
 }
