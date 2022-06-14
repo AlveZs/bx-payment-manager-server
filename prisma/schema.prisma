@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -18,7 +18,9 @@ model Customer {
   password     String
   wifiPassword String?
   address      String?
-  payments     Payment[]
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  Payments     Payment[]
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deleted      DateTime?
@@ -30,9 +32,21 @@ model Payment {
   date        DateTime
   value       Decimal
   customerId  Int
-  customer    Customer @relation(fields: [customerId], references: [id])
+  Customer    Customer @relation(fields: [customerId], references: [id])
   type        String?
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  uuid      String     @unique @default(uuid())
+  name      String
+  username  String     @unique
+  password  String
+  email     String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  Customers Customer[]
 }

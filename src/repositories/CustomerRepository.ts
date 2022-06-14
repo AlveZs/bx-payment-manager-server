@@ -9,6 +9,7 @@ export interface CustomerCreateData {
   wifiPassword?: string;
   address?: string;
   phone?: string;
+  userId: number;
 }
 
 export interface CustomerUpdateData {

@@ -12,6 +12,7 @@ export interface CreateCustomerUseCaseRequest {
   wifiPassword?: string;
   address?: string;
   phone?: string;
+  userId: number;
 }
 
 export class CreateCustomerUseCase {
@@ -29,7 +30,8 @@ export class CreateCustomerUseCase {
       password,
       wifiPassword,
       address,
-      phone
+      phone,
+      userId
     } = request;
 
     const requiredFieldsNull = [
@@ -37,6 +39,7 @@ export class CreateCustomerUseCase {
       number,
       userName,
       password,
+      userId
     ].filter(isNullOrEmpty);
 
     if(requiredFieldsNull.length > 0) {
@@ -51,7 +54,8 @@ export class CreateCustomerUseCase {
       password,
       wifiPassword,
       address,
-      phone
+      phone,
+      userId
     });
   }
 }

@@ -1,14 +1,37 @@
 import express from 'express'
+import { AuthController } from './controllers/AuthController';
 
 import { CustomerController } from './controllers/CustomerController';
 import { PaymentController } from './controllers/PaymentController';
+import { verifyToken } from './middleware/Auth';
 
 export const routes = express.Router()
 
 const customerController = new CustomerController();
 const paymentController = new PaymentController();
+const authController = new AuthController();
 
-routes.post('/customers', customerController.create);
+routes.get('/', (req, res) => {
+  res.status(200).send("Server is fine");
+});
+
+routes.use('/customers', verifyToken);
+
+routes.use('/payments', verifyToken);
+
+routes.use('/dashboard', verifyToken);
+
+// Auth routes
+
+routes.post('/register', authController.register);
+
+routes.post('/login', authController.login);
+
+routes.put('/user', verifyToken, authController.update);
+
+// Customer routes
+
+routes.post('/customers', verifyToken, customerController.create);
 
 routes.put('/customers/:customerUuid', customerController.update);
 

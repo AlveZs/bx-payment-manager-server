@@ -6,7 +6,7 @@ export interface Payment {
   date: Date;
   value: number;
   customerId: number;
-  customer: Customer;
+  Customer: Customer;
   description?: string;
   type?: string;
 }

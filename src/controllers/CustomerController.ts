@@ -19,6 +19,8 @@ class CustomerController {
       address,
       phone
     } = request.body
+
+    const { userId } = response.locals.jwtPayload;
   
     const prismaCustomerRepository = new PrismaCustomerRepository();
   
@@ -35,7 +37,8 @@ class CustomerController {
         password,
         wifiPassword,
         address,
-        phone
+        phone,
+        userId
       });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {

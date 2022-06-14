@@ -19,6 +19,7 @@ describe('Create customer', () => {
       number: 123,
       userName: 'alvezs',
       password: '123456',
+      userId: 1
     })).resolves.not.toThrow();
 
     expect(createCustomerSpy).toHaveBeenCalled();
@@ -30,6 +31,7 @@ describe('Create customer', () => {
       number: 123,
       userName: '',
       password: '',
+      userId: 1
     })).rejects.toThrow();
   });
 });

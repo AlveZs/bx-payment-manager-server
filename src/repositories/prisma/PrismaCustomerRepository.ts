@@ -17,7 +17,8 @@ export class PrismaCustomerRepository implements CustomerRepository {
     password,
     wifiPassword,
     address,
-    phone
+    phone,
+    userId
   }: CustomerCreateData) {
     await prisma.customer.create({
       data: {
@@ -28,7 +29,8 @@ export class PrismaCustomerRepository implements CustomerRepository {
         password,
         wifiPassword,
         address,
-        phone
+        phone,
+        userId
       },
     });
   }
@@ -98,7 +100,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
         uuid: customerUuid,
       },
       include: {
-        payments: true,
+        Payments: true,
       },
     });
 
@@ -108,7 +110,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
   async getAll(): Promise<Customer[]> {
     const allCostumers = await prisma.customer.findMany({
       include: {
-        payments: {          
+        Payments: {          
           orderBy: {
             date: 'desc',
           },
