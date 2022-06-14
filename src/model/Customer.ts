@@ -11,5 +11,6 @@ export interface Customer {
   password: string;
   wifiPassword?: string;
   address?: string;
-  Payments?: Payment[]
+  Payments?: Payment[];
+  userId: number;
 }

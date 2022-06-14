@@ -21,6 +21,7 @@ class PaymentController {
     } = request.body
 
     const customerUuid = request.params.customerUuid
+    const { userId } = response.locals.jwtPayload
 
     const prismaCustomerRepository = new PrismaCustomerRepository();
     const prismaPaymentRepository = new PrismaPaymentRepository();
@@ -32,6 +33,7 @@ class PaymentController {
 
     try {
       await createPaymentUseCase.execute(
+        userId,
         customerUuid,
         {
           date,
@@ -41,11 +43,19 @@ class PaymentController {
         }
       );
     } catch (error) {
-      if (error instanceof Error && (
-        error.message === ERRORS_MESSAGES.REQUIRED_ERROR ||
-        error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND
-      )) {
-        return response.status(400).send();
+      if (error instanceof Error) {
+        let errorStatus = 400;
+
+        if (
+          error.message === ERRORS_MESSAGES.REQUIRED_ERROR ||
+          error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND
+        ) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
       }
 
       return response.status(500).send();
@@ -62,7 +72,8 @@ class PaymentController {
       type,
     } = request.body
 
-    const paymentUuid = request.params.paymentUuid
+    const paymentUuid = request.params.paymentUuid;
+    const { userId } = response.locals.jwtPayload
 
     const prismaPaymentRepository = new PrismaPaymentRepository();
 
@@ -72,6 +83,7 @@ class PaymentController {
 
     try {
       await updatePaymentUseCase.execute(
+        userId,
         paymentUuid,
         {
           date,
@@ -81,29 +93,51 @@ class PaymentController {
         }
       );
     } catch (error) {
-      if (error instanceof Error && error.message === ERRORS_MESSAGES.PAYMENT_NOT_FOUND) {
-        return response.status(400).send();
+      if (error instanceof Error) {
+        let errorStatus = 400;
+
+        if (error.message === ERRORS_MESSAGES.PAYMENT_NOT_FOUND) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
       }
 
-      return response.status(500).send();
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
     }
 
     return response.status(200).send();
   }
 
   async getAll(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload
+
     const prismaPaymentRepository = new PrismaPaymentRepository();
 
     const getAllPaymentsUseCase = new GetAllPaymentsUseCase(
       prismaPaymentRepository
     );
 
-    const allPayments = await getAllPaymentsUseCase.execute();
+    try {
+      const allPayments = await getAllPaymentsUseCase.execute(userId);
+      return response.status(200).json({ Payments: allPayments }).send();
+    } catch (error) {
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
+    }
 
-    return response.status(200).json({ Payments: allPayments }).send();
   }
 
   async delete(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload
+
     const paymentUuid = request.params.paymentUuid
 
     const prismaPaymentRepository = new PrismaPaymentRepository();
@@ -113,19 +147,31 @@ class PaymentController {
     );
 
     try {
-      await deletePaymentUseCase.execute(paymentUuid);
+      await deletePaymentUseCase.execute(userId, paymentUuid);
+      return response.status(200).send();
     } catch (error) {
-      if (error instanceof Error && error.message === ERRORS_MESSAGES.PAYMENT_NOT_FOUND) {
-        return response.status(400).send();
+      if (error instanceof Error) {
+        let errorStatus = 400;
+
+        if (error.message === ERRORS_MESSAGES.PAYMENT_NOT_FOUND) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
       }
 
-      return response.status(500).send();
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
     }
-
-    return response.status(200).send();
   }
 
   async getByUuid(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload
+
     const paymentUuid = request.params.paymentUuid
 
     const prismaPaymentRepository = new PrismaPaymentRepository();
@@ -134,13 +180,33 @@ class PaymentController {
       prismaPaymentRepository
     );
 
-    const payment = await getPaymentUseCase.execute(paymentUuid)
+    try {
+      const payment = await getPaymentUseCase.execute(userId, paymentUuid)
+      return response.status(200).json({ Payment: payment }).send();
+    } catch (error) {
+      if (error instanceof Error) {
+        let errorStatus = 400;
 
-    return response.status(200).json({ Payment: payment }).send();
+        if (error.message === ERRORS_MESSAGES.PAYMENT_NOT_FOUND) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
+      }
+
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
+    }
   }
 
   async getByCustomer(request: Request, response: Response) {
-    const customerUuid = request.params.customerUuid
+    const customerUuid = request.params.customerUuid;
+    const { userId } = response.locals.jwtPayload
+
     let year = request.query?.year ? parseInt(request.query.year.toString()) : undefined;
     let month = request.query?.month ? parseInt(request.query.month.toString()) : undefined;
 
@@ -153,12 +219,24 @@ class PaymentController {
       prismaCustomerRepository,
     );
 
-    const payments = await getPaymentByCustomerUseCase.execute(customerUuid, year, month);
+    try {
+      const payments = await getPaymentByCustomerUseCase.execute(userId, customerUuid, year, month);
+      return response.status(200).json({ Payments: payments }).send();
+    } catch (error) {
+      if (error instanceof Error && error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+        return response.status(401).json({ message: error.message }).send();
+      }
 
-    return response.status(200).json({ Payments: payments }).send();
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
+    }
   }
 
   async getPaymentInfos(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload
+
     let year = request.query?.year ? parseInt(request.query.year.toString()) : undefined;
 
     const prismaPaymentRepository = new PrismaPaymentRepository();
@@ -167,9 +245,15 @@ class PaymentController {
       prismaPaymentRepository
     );
 
-    const payments = await getDashboardInfosUseCase.execute(year);
-
-    return response.status(200).json({ Infos: payments }).send();
+    try {
+      const payments = await getDashboardInfosUseCase.execute(userId, year);
+      return response.status(200).json({ Infos: payments }).send();
+    } catch (error) {
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
+    }
   }
 }
 

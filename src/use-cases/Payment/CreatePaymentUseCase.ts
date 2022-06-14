@@ -16,9 +16,13 @@ export class CreatePaymentUseCase {
   constructor(
     private paymentRepository: PaymentRepository,
     private customerRepository: CustomerRepository,
-  ) {}
+  ) { }
 
-  async execute(customerUuid: string, request: CreatePaymentUseCaseRequest) {
+  async execute(
+    userId: number,
+    customerUuid: string,
+    request: CreatePaymentUseCaseRequest
+  ) {
     const {
       date,
       value,
@@ -32,12 +36,16 @@ export class CreatePaymentUseCase {
       throw new Error(ERRORS_MESSAGES.CUSTOMER_NOT_FOUND);
     }
 
+    if (customer.userId !== userId) {
+      throw new Error(ERRORS_MESSAGES.UNAUTHORIZED);
+    }
+
     const requiredFieldsNull = [
       date,
       value
     ].filter(isNullOrEmpty);
 
-    if(requiredFieldsNull.length > 0) {
+    if (requiredFieldsNull.length > 0) {
       throw new Error(ERRORS_MESSAGES.REQUIRED_ERROR);
     }
 

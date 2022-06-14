@@ -17,8 +17,8 @@ export class PaymentDashboardInfosUseCase {
     private paymentRepository: PaymentRepository
   ) {}
 
-  async execute(year?: number): Promise<PaymentInfos> {
-    const payments = await this.paymentRepository.getAll(year);
+  async execute(userId: number, year?: number): Promise<PaymentInfos> {
+    const payments = await this.paymentRepository.getAll(userId, year);
     let months: any = {}
 
     for (let i = 1; i < 13; i++) {

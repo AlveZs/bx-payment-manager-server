@@ -6,8 +6,8 @@ export class GetAllPaymentsUseCase {
     private paymentRepository: PaymentRepository
   ) {}
 
-  async execute() {
-    const allPayments = await this.paymentRepository.getAll();
+  async execute(userId: number) {
+    const allPayments = await this.paymentRepository.getAll(userId);
     
     return allPayments;
   }

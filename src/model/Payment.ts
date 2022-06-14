@@ -1,12 +1,15 @@
+import { Decimal } from "@prisma/client/runtime";
 import { Customer } from "./Customer";
 
 export interface Payment {
-  id?: number;
-  uuid?: string;
+  id: number;
+  uuid: string;
   date: Date;
-  value: number;
+  value: Decimal;
   customerId: number;
-  Customer: Customer;
-  description?: string;
-  type?: string;
+  Customer?: Customer | null;
+  description: string | null;
+  type: string | null;
+  createdAt: Date;
+  updatedAt: Date;
 }

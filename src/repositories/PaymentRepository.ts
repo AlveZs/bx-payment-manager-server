@@ -1,4 +1,4 @@
-import { Payment } from "@prisma/client";
+import { Payment } from "../model/Payment";
 
 export interface PaymentCreateData {
   date: Date;        
@@ -24,5 +24,5 @@ export interface PaymentRepository {
     year?: number,
     month?: number
   ) => Promise<Payment[] | null>;
-  getAll: (year?: number) => Promise<Payment[]>;
+  getAll: (userId: number, year?: number) => Promise<Payment[]>;
 }

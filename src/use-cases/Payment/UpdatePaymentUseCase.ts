@@ -1,3 +1,4 @@
+import { ERRORS_MESSAGES } from "../../constants/Errors";
 import { PaymentRepository } from "../../repositories/PaymentRepository";
 
 export interface UpdatePaymentUseCaseRequest {
@@ -13,7 +14,11 @@ export class UpdatePaymentUseCase {
     private paymentRepository: PaymentRepository
   ) {}
 
-  async execute(paymentUuid: string, request: UpdatePaymentUseCaseRequest) {
+  async execute(
+    userId: number,
+    paymentUuid: string,
+    request: UpdatePaymentUseCaseRequest
+  ) {
     const {
       date,
       value,
@@ -21,14 +26,25 @@ export class UpdatePaymentUseCase {
       type,
     } = request;
 
-    await this.paymentRepository.update(
-      paymentUuid,
-      {
-        date,
-        value,
-        description,
-        type,
+    const payment = await this.paymentRepository.getByUuid(paymentUuid);
+
+    if (payment) {
+
+      if (payment.Customer?.userId !== userId) {
+        throw new Error(ERRORS_MESSAGES.UNAUTHORIZED);
       }
-    );
+
+      await this.paymentRepository.update(
+        paymentUuid,
+        {
+          date,
+          value,
+          description,
+          type,
+        }
+      );
+    } else {
+      throw new Error(ERRORS_MESSAGES.PAYMENT_NOT_FOUND);
+    }
   }
 }

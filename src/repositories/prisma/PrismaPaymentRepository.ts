@@ -1,4 +1,5 @@
 import { Payment, Prisma } from "@prisma/client";
+import { Payment as PaymentModel } from '../../model/Payment'
 import { ERRORS_MESSAGES } from "../../constants/Errors";
 import { prisma } from "../../prisma";
 import { PaymentCreateData, PaymentRepository, PaymentUpdateData } from "../PaymentRepository";
@@ -51,7 +52,7 @@ export class PrismaPaymentRepository implements PaymentRepository {
           throw new Error(ERRORS_MESSAGES.PAYMENT_NOT_FOUND);
         }
       }
-      
+
       throw error;
     }
   }
@@ -69,7 +70,7 @@ export class PrismaPaymentRepository implements PaymentRepository {
           throw new Error(ERRORS_MESSAGES.PAYMENT_NOT_FOUND);
         }
       }
-      
+
       throw error;
     }
   }
@@ -79,30 +80,43 @@ export class PrismaPaymentRepository implements PaymentRepository {
       where: {
         uuid: paymentUuid,
       },
+      include: {
+        Customer: true,
+      },
     });
 
     return payment;
   }
 
-  async getAll(year?: number): Promise<Payment[]> {
+  async getAll(userId: number, year?: number): Promise<Payment[]> {
     let whereCondition: any = {};
 
     if (year) {
       whereCondition.date = {
         gte: new Date(year, 0, 1),
-        lte:  new Date(year, 12, 0),
+        lte: new Date(year, 12, 0),
       }
     }
-    
+
     const allPayments = await prisma.payment.findMany({
-      where: whereCondition,
+      where: {
+        ...whereCondition,
+        Customer: {
+          userId: {
+            equals: userId,
+          },
+        },
+      },
+      include: {
+        Customer: true,
+      },
     });
 
     return allPayments;
   }
 
   async getAllByCostumerId(customerId: number, year?: number, month?: number): Promise<Payment[]> {
-    let whereCondition: {customerId: number, date?: any} = {
+    let whereCondition: { customerId: number, date?: any } = {
       customerId,
     };
 
@@ -110,7 +124,7 @@ export class PrismaPaymentRepository implements PaymentRepository {
       let yearFilter = year || new Date().getFullYear();
       whereCondition.date = {
         gte: new Date(yearFilter, month - 1, 1),
-        lte:  new Date(yearFilter, month, 0),
+        lte: new Date(yearFilter, month, 0),
       }
     }
 

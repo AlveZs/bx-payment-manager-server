@@ -6,4 +6,7 @@ export const ERRORS_MESSAGES = {
   CONFIRM_PASSWORD_MISMATCH: "The passwords provided are not the same",
   USER_ALREADY_EXISTS: "This username is already in use",
   INVALID_CREDENTIALS: "Invalid credentials.",
+  UNAUTHORIZED: "You don't have permission to do this.",
+  INTERNAL_SERVER: "Internal server error",
+  BAD_REQUEST: "Bad request.",
 }
