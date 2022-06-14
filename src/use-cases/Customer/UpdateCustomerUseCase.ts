@@ -1,3 +1,4 @@
+import { ERRORS_MESSAGES } from "../../constants/Errors";
 import { CustomerRepository } from "../../repositories/CustomerRepository";
 
 
@@ -16,9 +17,13 @@ export class UpdateCustomerUseCase {
 
   constructor(
     private customerRepository: CustomerRepository
-  ) {}
+  ) { }
 
-  async execute(customerUuid: string, request: UpdateCustomerUseCaseRequest) {
+  async execute(
+    userId: number,
+    customerUuid: string,
+    request: UpdateCustomerUseCaseRequest
+  ) {
     const {
       name,
       nickname,
@@ -30,17 +35,27 @@ export class UpdateCustomerUseCase {
       phone
     } = request;
 
-    await this.customerRepository.update(
-    customerUuid,
-    {
-      name,
-      nickname,
-      number,
-      userName,
-      password,
-      wifiPassword,
-      address,
-      phone
-    });
+    const customer = await this.customerRepository.getByUuid(customerUuid);
+
+    if (customer) {
+      if (customer.userId !== userId) {
+        throw new Error(ERRORS_MESSAGES.UNAUTHORIZED);
+      }
+      
+      await this.customerRepository.update(
+        customerUuid,
+        {
+          name,
+          nickname,
+          number,
+          userName,
+          password,
+          wifiPassword,
+          address,
+          phone
+        });
+    } else {
+      throw new Error(ERRORS_MESSAGES.CUSTOMER_NOT_FOUND);
+    }
   }
 }

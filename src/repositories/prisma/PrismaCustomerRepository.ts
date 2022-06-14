@@ -107,8 +107,11 @@ export class PrismaCustomerRepository implements CustomerRepository {
     return customer;
   }
 
-  async getAll(): Promise<Customer[]> {
+  async getAll(userId: number): Promise<Customer[]> {
     const allCostumers = await prisma.customer.findMany({
+      where: {
+        userId
+      },
       include: {
         Payments: {          
           orderBy: {

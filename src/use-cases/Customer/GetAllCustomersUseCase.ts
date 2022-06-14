@@ -6,8 +6,8 @@ export class GetAllCustomersUseCase {
     private customerRepository: CustomerRepository
   ) {}
 
-  async execute() {
-    const allCostumers = await this.customerRepository.getAll();
+  async execute(userId: number) {
+    const allCostumers = await this.customerRepository.getAll(userId);
     
     return allCostumers;
   }

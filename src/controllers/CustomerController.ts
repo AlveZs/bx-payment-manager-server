@@ -42,16 +42,21 @@ class CustomerController {
       });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {
-        return response.status(400).send();
+        return response.status(400).json({ message: error.message }).send();
       }
 
-      return response.status(500).send();
+      return response
+        .status(500)
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
+        .send();
     }
   
     return response.status(201).send();
   }
 
   async update(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload;
+
     const {
       name,
       nickname,
@@ -73,6 +78,7 @@ class CustomerController {
 
     try {
       await updateCustomerUseCase.execute(
+        userId,
         customerUuid,
         {
           name,
@@ -85,8 +91,16 @@ class CustomerController {
           phone
         });
     } catch (error) {
-      if (error instanceof Error && error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {
-        return response.status(422).send();
+      if (error instanceof Error) {
+        let errorStatus = 400;
+
+        if (error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
       }
 
       return response.status(500).send();
@@ -96,18 +110,22 @@ class CustomerController {
   }
 
   async getAll(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload;
+
     const prismaCustomerRepository = new PrismaCustomerRepository();
   
     const getAllCustomersUseCase = new GetAllCustomersUseCase(
       prismaCustomerRepository
     );
   
-    const allCustomers = await getAllCustomersUseCase.execute();
+    const allCustomers = await getAllCustomersUseCase.execute(userId);
   
     return response.status(200).json({ Customers: allCustomers }).send();
   }
 
   async delete(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload;
+
     const customerUuid = request.params.customerUuid
   
     const prismaCustomerRepository = new PrismaCustomerRepository();
@@ -117,10 +135,21 @@ class CustomerController {
     );
   
     try {
-      await deleteCustomerUseCase.execute(customerUuid);
+      await deleteCustomerUseCase.execute(userId, customerUuid);
     } catch (error) {
-      if (error instanceof Error && error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND) {
-        return response.status(422).send();
+      if (error instanceof Error) {
+        let errorStatus = 400;
+
+        if (
+          error.message === ERRORS_MESSAGES.REQUIRED_ERROR ||
+          error.message === ERRORS_MESSAGES.CUSTOMER_NOT_FOUND
+        ) {
+          errorStatus = 400;
+        } else if (error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+          errorStatus = 401;
+        }
+
+        return response.status(errorStatus).json({ message: error.message }).send();
       }
 
       return response.status(500).send();
@@ -130,6 +159,8 @@ class CustomerController {
   }
 
   async getByUuid(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload;
+
     const customerUuid = request.params.customerUuid
   
     const prismaCustomerRepository = new PrismaCustomerRepository();
@@ -138,9 +169,16 @@ class CustomerController {
       prismaCustomerRepository
     );
   
-    const customer = await getCustomerUseCase.execute(customerUuid)
-  
-    return response.status(200).json({ Customer: customer }).send();
+    try {
+      const customer = await getCustomerUseCase.execute(userId, customerUuid)
+      return response.status(200).json({ Customer: customer }).send();
+    } catch (error) {
+      if (error instanceof Error && error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
+        return response.status(401).json({ message: error.message }).send();
+      }
+
+      return response.status(500).send();
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import { Customer } from "@prisma/client";
+import { Customer } from "../model/Customer";
 
 export interface CustomerCreateData {
   name: string;
@@ -28,5 +28,5 @@ export interface CustomerRepository {
   update: (customerUuid: string, data: CustomerUpdateData) => Promise<void>;
   delete: (customerUuid: string) => Promise<void>;
   getByUuid: (customerUuid: string) => Promise<Customer | null>;
-  getAll: () => Promise<Customer[]>;
+  getAll: (userId: number) => Promise<Customer[]>;
 }
