@@ -11,15 +11,15 @@ function verifyToken(request: Request, response: Response, next: NextFunction) {
   const token = authHeader ? <string>authHeader.split(' ')[1] : '';
 
   if (!token) {
-    return response.status(403).json({ message: "A token is required for authentication" });
+    return response.status(401).json({ message: "A token is required for authentication" });
   }
 
-  const decoded = verify(
+  verify(
     token,
     <string>process.env.ACCESS_TOKEN_KEY,
     (err, decoded) => {
       if (err) {
-        response.sendStatus(403);
+        return response.sendStatus(403);
       }
       response.locals.jwtPayload = decoded;
       next();
