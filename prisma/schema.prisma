@@ -40,13 +40,20 @@ model Payment {
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  uuid      String     @unique @default(uuid())
-  name      String
-  username  String     @unique
-  password  String
-  email     String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  Customers Customer[]
+  id            Int            @id @default(autoincrement())
+  uuid          String         @unique @default(uuid())
+  name          String
+  username      String         @unique
+  password      String
+  email         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  Customers     Customer[]
+  RefreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id           String      @id
+  userId       Int
+  User         User     @relation(fields: [userId], references: [id])
 }
