@@ -24,6 +24,6 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(routes);
 
-app.listen(3333, () => {
+app.listen(process.env.port || 3333, () => {
   console.log('HTTP server running!');
 });
