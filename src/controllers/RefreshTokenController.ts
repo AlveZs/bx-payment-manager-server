@@ -81,7 +81,7 @@ class RefreshTokenController {
                 userUuid: decoded.userUuid
               },
               process.env.ACCESS_TOKEN_KEY as string,
-              { expiresIn: 60 * 10 }
+              { expiresIn: process.env.ACCESS_TOKEN_EXPIRATION }
             );
 
             const newRefreshToken = sign(
@@ -91,7 +91,7 @@ class RefreshTokenController {
                 userUuid: decoded.userUuid
               },
               process.env.REFRESH_TOKEN_KEY as string,
-              { expiresIn: '1d' }
+              { expiresIn: process.env.REFRESH_TOKEN_EXPIRATION }
             );
 
             const tokensForUpdate = newRefreshTokenArray ?
