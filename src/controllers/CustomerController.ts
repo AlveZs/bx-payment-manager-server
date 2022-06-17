@@ -42,13 +42,12 @@ class CustomerController {
       });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.REQUIRED_ERROR) {
-        return response.status(400).json({ message: error.message }).send();
+        return response.status(400).json({ message: error.message });
       }
 
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
   
     return response.status(201).send();
@@ -100,7 +99,7 @@ class CustomerController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response.status(500).send();
@@ -120,7 +119,7 @@ class CustomerController {
   
     const allCustomers = await getAllCustomersUseCase.execute(userId);
   
-    return response.status(200).json({ Customers: allCustomers }).send();
+    return response.status(200).json({ Customers: allCustomers });
   }
 
   async delete(request: Request, response: Response) {
@@ -149,7 +148,7 @@ class CustomerController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response.status(500).send();
@@ -171,10 +170,10 @@ class CustomerController {
   
     try {
       const customer = await getCustomerUseCase.execute(userId, customerUuid)
-      return response.status(200).json({ Customer: customer }).send();
+      return response.status(200).json({ Customer: customer });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
-        return response.status(401).json({ message: error.message }).send();
+        return response.status(401).json({ message: error.message });
       }
 
       return response.status(500).send();

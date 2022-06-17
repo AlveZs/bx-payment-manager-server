@@ -5,10 +5,17 @@ import { compare } from "bcrypt";
 import { sign }  from "jsonwebtoken";
 
 
-export interface RegisterUserUseCaseRequest {
+export interface LoginUserUseCaseRequest {
   username: string;
   password: string;
 }
+
+export interface AccessTokeyPayload {
+  userName: string;
+  userId: string;
+  userUuid: string;
+}
+
 
 export class LoginUseCase {
 
@@ -16,11 +23,13 @@ export class LoginUseCase {
     private authRepository: AuthRepository
   ) {}
 
-  async execute(request: RegisterUserUseCaseRequest) {
+  async execute(request: LoginUserUseCaseRequest, jwtCookie?: string) {
     const {
       username,
       password,
     } = request;
+
+    let clearCookie = false;
 
     const requiredFieldsNull = [
       username,
@@ -36,15 +45,59 @@ export class LoginUseCase {
     if (existentUser && (
       await compare(password, existentUser.password)
     )) {
-      const token = sign(
-        { userId: existentUser.id, userUuid: existentUser.uuid },
-        process.env.TOKEN_KEY as string,
+      const accessToken = sign(
         {
-          expiresIn: '2h',
-        }
+          userUsername: existentUser.username,
+          userId: existentUser.id,
+          userUuid: existentUser.uuid
+        },
+        process.env.ACCESS_TOKEN_KEY as string,
+        { expiresIn: 60 * 10}
       );
 
-      return token
+      const newRefreshToken = sign(
+        {
+          userUsername: existentUser.username,
+          userId: existentUser.id,
+          userUuid: existentUser.uuid
+        },
+        process.env.REFRESH_TOKEN_KEY as string,
+        { expiresIn: '1d' }
+      );
+
+      let newRefreshTokenArray =
+        !jwtCookie
+          ? existentUser.RefreshTokens?.map(token => token.id)
+          : existentUser.RefreshTokens?.filter(token => token.id !== jwtCookie).map(token => token.id);
+
+      if (jwtCookie) {
+        const refreshToken = jwtCookie;
+        const foundToken = await this.authRepository.getUserByRefreshToken(refreshToken);
+
+        if (!foundToken) {
+          newRefreshTokenArray = [];
+        }
+
+        clearCookie = true;
+      }
+
+      const tokensForUpdate = newRefreshTokenArray ?
+        [...newRefreshTokenArray, newRefreshToken] :
+        [newRefreshToken];
+
+      await this.authRepository.updateRefreshTokens(
+        existentUser.uuid,
+        tokensForUpdate
+      );
+
+      return {
+        clearCookie,
+        newRefreshToken,
+        accessToken,
+        userName: existentUser.name,
+        userUsername: existentUser.username,
+        userEmail: existentUser.email
+      }
     }
 
     throw new Error(ERRORS_MESSAGES.INVALID_CREDENTIALS);

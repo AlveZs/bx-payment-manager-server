@@ -9,4 +9,5 @@ export const ERRORS_MESSAGES = {
   UNAUTHORIZED: "You don't have permission to do this.",
   INTERNAL_SERVER: "Internal server error",
   BAD_REQUEST: "Bad request.",
+  FORBIDDEN: "Forbidden.",
 }

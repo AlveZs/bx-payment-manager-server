@@ -1,4 +1,5 @@
-import { User } from "@prisma/client";
+import { RefreshToken } from "../model/RefreshToken";
+import { User } from "../model/User";
 
 export interface RegisterUserUseCaseRequest {
   name: string;
@@ -17,6 +18,7 @@ export interface UpdateUserUseCaseRequest {
   username?: string;
   password?: string;
   email?: string;
+  RefreshTokens?: string[];
 }
 
 export interface UserLoginResponse {
@@ -26,7 +28,9 @@ export interface UserLoginResponse {
 export interface AuthRepository {
   register: (data: RegisterUserUseCaseRequest) => Promise<void>;
   update: (userUuid: string, data: UpdateUserUseCaseRequest) => Promise<void>;
+  updateRefreshTokens: (userUuid: string, refreshTokens: string[]) => Promise<void>;
   delete: (userUuid: string) => Promise<void>;
   getByUuid: (userUuid: string) => Promise<User | null>;
   getByUsername: (username: string) => Promise<User | null>;
+  getUserByRefreshToken: (refreshToken: string) => Promise<User | null>;
 }

@@ -3,13 +3,16 @@ import { AuthController } from './controllers/AuthController';
 
 import { CustomerController } from './controllers/CustomerController';
 import { PaymentController } from './controllers/PaymentController';
-import { verifyToken } from './middleware/Auth';
+import { RefreshTokenController } from './controllers/RefreshTokenController';
+import { verifyToken } from './middlewares/VerifyToken';
 
 export const routes = express.Router()
 
 const customerController = new CustomerController();
 const paymentController = new PaymentController();
 const authController = new AuthController();
+const refreshTokenController = new RefreshTokenController();
+
 
 routes.get('/', (req, res) => {
   res.status(200).send("Server is fine");
@@ -26,6 +29,12 @@ routes.use('/dashboard', verifyToken);
 routes.post('/register', authController.register);
 
 routes.post('/login', authController.login);
+
+routes.get('/logout', authController.logout);
+
+routes.get('/refresh', refreshTokenController.refreshTokenUpdate);
+
+routes.get('/user', verifyToken, authController.getLoggedUser);
 
 routes.put('/user', verifyToken, authController.update);
 

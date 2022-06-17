@@ -34,7 +34,7 @@ export class UpdateUserUseCase {
     if (username) {
       const existentUser = await this.authRepository.getByUsername(username);
   
-      if (existentUser) {
+      if (existentUser && username !== existentUser.username) {
         throw new Error(ERRORS_MESSAGES.USER_ALREADY_EXISTS);
       }
 

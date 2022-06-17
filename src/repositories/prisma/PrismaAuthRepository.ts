@@ -44,10 +44,45 @@ export class PrismaAuthRepository implements AuthRepository {
     );
   }
 
+  async updateRefreshTokens(
+    userUuid: string,
+    refreshTokens: string[]
+  ) {
+    await prisma.user.update(
+      {
+        where: {
+          uuid: userUuid,
+        },
+        data: {
+          RefreshTokens: {
+            deleteMany: {},
+            createMany: {
+              data: refreshTokens.map(token => ({ id: token })),
+            },
+          }
+        },
+      }
+    );
+  }
+
   async getByUuid(userUuid: string): Promise<User | null> {
     const user = await prisma.user.findUnique({
       where: {
         uuid: userUuid,
+      },
+    });
+
+    return user;
+  }
+
+  async getUserByRefreshToken(refreshToken: string): Promise<User | null> {
+    const user = await prisma.user.findFirst({
+      where: {
+        RefreshTokens: {
+          some: {
+            id: refreshToken,
+          }
+        },
       },
     });
 
@@ -59,6 +94,9 @@ export class PrismaAuthRepository implements AuthRepository {
       where: {
         username,
       },
+      include: {
+        RefreshTokens: true,
+      }
     });
 
     return user;

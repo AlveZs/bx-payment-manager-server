@@ -55,7 +55,7 @@ class PaymentController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response.status(500).send();
@@ -102,13 +102,12 @@ class PaymentController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
 
     return response.status(200).send();
@@ -125,12 +124,11 @@ class PaymentController {
 
     try {
       const allPayments = await getAllPaymentsUseCase.execute(userId);
-      return response.status(200).json({ Payments: allPayments }).send();
+      return response.status(200).json({ Payments: allPayments });
     } catch (error) {
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
 
   }
@@ -159,13 +157,12 @@ class PaymentController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
   }
 
@@ -182,7 +179,7 @@ class PaymentController {
 
     try {
       const payment = await getPaymentUseCase.execute(userId, paymentUuid)
-      return response.status(200).json({ Payment: payment }).send();
+      return response.status(200).json({ Payment: payment });
     } catch (error) {
       if (error instanceof Error) {
         let errorStatus = 400;
@@ -193,19 +190,18 @@ class PaymentController {
           errorStatus = 401;
         }
 
-        return response.status(errorStatus).json({ message: error.message }).send();
+        return response.status(errorStatus).json({ message: error.message });
       }
 
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
   }
 
   async getByCustomer(request: Request, response: Response) {
     const customerUuid = request.params.customerUuid;
-    const { userId } = response.locals.jwtPayload
+    const { userId } = response.locals.jwtPayload;
 
     let year = request.query?.year ? parseInt(request.query.year.toString()) : undefined;
     let month = request.query?.month ? parseInt(request.query.month.toString()) : undefined;
@@ -221,16 +217,15 @@ class PaymentController {
 
     try {
       const payments = await getPaymentByCustomerUseCase.execute(userId, customerUuid, year, month);
-      return response.status(200).json({ Payments: payments }).send();
+      return response.status(200).json({ Payments: payments });
     } catch (error) {
       if (error instanceof Error && error.message === ERRORS_MESSAGES.UNAUTHORIZED) {
-        return response.status(401).json({ message: error.message }).send();
+        return response.status(401).json({ message: error.message });
       }
 
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
   }
 
@@ -247,12 +242,11 @@ class PaymentController {
 
     try {
       const payments = await getDashboardInfosUseCase.execute(userId, year);
-      return response.status(200).json({ Infos: payments }).send();
+      return response.status(200).json({ Infos: payments });
     } catch (error) {
       return response
         .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER })
-        .send();
+        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
   }
 }
