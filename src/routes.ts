@@ -2,6 +2,7 @@ import express from 'express'
 
 import { CustomerController } from './controllers/CustomerController';
 import { PaymentController } from './controllers/PaymentController';
+import fileUpload = require("express-fileupload");
 
 export const routes = express.Router()
 
@@ -34,4 +35,8 @@ routes.get('/payments', paymentController.getAll);
 
 routes.get('/dashboard', paymentController.getPaymentInfos);
 
-routes.get('/import-csv', customerController.importFromCsv);
+routes.post(
+  '/import-csv',
+  fileUpload(),
+  customerController.importFromCsv
+);

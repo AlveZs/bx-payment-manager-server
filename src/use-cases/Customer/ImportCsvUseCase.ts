@@ -1,11 +1,9 @@
-import path from "path";
-import fs from "fs";
 import { parse } from "csv-parse";
-import { CustomerCreateData, CustomerRepository } from "../../repositories/CustomerRepository";
+import { Response } from "express";
+import { finished } from "stream/promises";
 import { Customer } from "../../model/Customer";
 import { Payment } from "../../model/Payment";
-import { finished } from "stream/promises";
-
+import { CustomerCreateData, CustomerRepository } from "../../repositories/CustomerRepository";
 export interface CsvResult {
   number: string;
   name: string;
@@ -29,8 +27,7 @@ export class ImportCsvUseCase {
     private customerRepository: CustomerRepository,
   ) { }
 
-  async execute(): Promise<Customer[]> {
-    const csvFilePath = path.resolve(process.cwd(), 'uploads/some-csv.csv');
+  async execute(data: Buffer, response: Response, delimiter?: string): Promise<Customer[]> {
     const headers = ['number', 'name', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
     let customers: CustomerCreateData[] = []
@@ -39,13 +36,11 @@ export class ImportCsvUseCase {
 
     const records: CsvResult[] = [];
 
-    const parser = fs
-      .createReadStream(csvFilePath, { encoding: 'utf-8' })
-      .pipe(parse({
-        delimiter: ';',
+    const parser = parse(data, {
+        delimiter,
         columns: headers,
         from_line: 2,
-      }));
+      });
 
     parser.on('readable', function () {
       let record;
@@ -56,7 +51,7 @@ export class ImportCsvUseCase {
 
     parser.on('error', function (err) {
       console.error(err.message);
-      throw(err)
+      return response.sendStatus(500);
     });
 
     await finished(parser);

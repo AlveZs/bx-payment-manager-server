@@ -145,6 +145,15 @@ class CustomerController {
 
   async importFromCsv(request: Request, response: Response) {
     const prismaCustomerRepository = new PrismaCustomerRepository();
+
+    const file = request.files;
+    const { delimiter } = request.query; 
+
+    if (!file?.csv) {
+      return response.status(500).json({ message: "No files uploaded" });
+    }
+
+    const { data } = file.csv as any;
   
     const importCsvUseCase = new ImportCsvUseCase(
       prismaCustomerRepository,
@@ -153,10 +162,14 @@ class CustomerController {
     let costumers: Customer[] = [];
 
     try {
-      costumers = await importCsvUseCase.execute();
+      costumers = await importCsvUseCase.execute(
+        data,
+        response,
+        delimiter ? `${delimiter}` : undefined
+      );
     } catch (error) {
       console.log(error);
-      response.status(200).send(500);
+      return response.sendStatus(500);
     }
 
     return response.status(200).json({ ImportedCustomers: costumers }).send();
