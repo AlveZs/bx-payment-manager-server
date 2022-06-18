@@ -5,6 +5,7 @@ import { CustomerController } from './controllers/CustomerController';
 import { PaymentController } from './controllers/PaymentController';
 import { RefreshTokenController } from './controllers/RefreshTokenController';
 import { verifyToken } from './middlewares/VerifyToken';
+import fileUpload = require("express-fileupload");
 
 export const routes = express.Router()
 
@@ -65,3 +66,9 @@ routes.get('/customers/:customerUuid/payments', paymentController.getByCustomer)
 routes.get('/payments', paymentController.getAll);
 
 routes.get('/dashboard', paymentController.getPaymentInfos);
+
+routes.post(
+  '/import-csv',
+  fileUpload(),
+  customerController.importFromCsv
+);

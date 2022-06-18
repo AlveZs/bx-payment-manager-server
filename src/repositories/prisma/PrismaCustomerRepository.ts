@@ -7,6 +7,7 @@ import {
   CustomerRepository,
 } from "../CustomerRepository";
 import { ERRORS_MESSAGES } from "../../constants/Errors";
+import { PaymentCreateData } from "../PaymentRepository";
 
 export class PrismaCustomerRepository implements CustomerRepository {
   async create({
@@ -33,6 +34,16 @@ export class PrismaCustomerRepository implements CustomerRepository {
         userId
       },
     });
+  }
+
+  async createMultipleWithPayments(
+    customers: CustomerCreateData[],
+  ) {
+    await prisma.$transaction(customers.map(customer => (
+      prisma.customer.create({
+        data: customer,
+      })
+    )));
   }
 
   async update(
