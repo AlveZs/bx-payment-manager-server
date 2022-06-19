@@ -2,7 +2,6 @@ import { parse } from "csv-parse";
 import { Response } from "express";
 import { finished } from "stream/promises";
 import { Customer } from "../../model/Customer";
-import { Payment } from "../../model/Payment";
 import { CustomerCreateData, CustomerRepository } from "../../repositories/CustomerRepository";
 export interface CsvResult {
   number: string;
@@ -21,13 +20,24 @@ export interface CsvResult {
   12: string;
 }
 
+export interface PaymentCreate {
+  date: Date | string;
+  value: number;
+}
+
+
 export class ImportCsvUseCase {
 
   constructor(
     private customerRepository: CustomerRepository,
   ) { }
 
-  async execute(data: Buffer, response: Response, delimiter?: string): Promise<Customer[]> {
+  async execute(
+    data: Buffer,
+    response: Response,
+    userId: number,
+    delimiter?: string
+  ): Promise<Customer[]> {
     const headers = ['number', 'name', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
     let customers: CustomerCreateData[] = []
@@ -59,19 +69,19 @@ export class ImportCsvUseCase {
     customers = records.map((line: CsvResult) => {
       const { name, number } = line;
 
-      const payments: (Payment | null)[] = Object.entries(line).map(([key, lineValue]) => {
+      const payments: (PaymentCreate | null)[] = Object.entries(line).map(([key, lineValue]) => {
         const amountValue = Number(lineValue.replace(',', '.'));
         if (!isNaN(Number(key)) && !isNaN(amountValue) && amountValue > 0) {
           return {
             date: new Date(currentDate.getFullYear(), Number(key) - 1, 1),
             value: amountValue,
-          } as Payment
+          } as PaymentCreate
         }
 
         return null;
       });
 
-      const paymentsFiltered: Payment[] = payments.filter((payment): payment is Payment => payment !== null);
+      const paymentsFiltered: PaymentCreate[] = payments.filter((payment): payment is PaymentCreate => payment !== null);
 
       const customer: CustomerCreateData = {
         name,
@@ -81,11 +91,12 @@ export class ImportCsvUseCase {
           .split(' ')
           .join('_')}${String(number).padStart(4, '0')
           }`,
-        payments: {
+        Payments: {
           createMany: {
             data: paymentsFiltered
           }
-        }
+        },
+        userId
       };
 
       return customer
@@ -93,6 +104,6 @@ export class ImportCsvUseCase {
 
     this.customerRepository.createMultipleWithPayments(customers as CustomerCreateData[]);
 
-    return customers;
+    return customers as Customer[];
   }
 }

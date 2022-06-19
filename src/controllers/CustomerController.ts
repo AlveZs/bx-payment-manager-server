@@ -2,7 +2,6 @@ import { Request, Response } from 'express';
 import { ERRORS_MESSAGES } from '../constants/Errors';
 import { Customer } from '../model/Customer';
 import { PrismaCustomerRepository } from '../repositories/prisma/PrismaCustomerRepository';
-import { PrismaPaymentRepository } from '../repositories/prisma/PrismaPaymentRepository';
 import { CreateCustomerUseCase } from '../use-cases/Customer/CreateCustomerUseCase';
 import { DeleteCustomerUseCase } from '../use-cases/Customer/DeleteCustomerUseCase';
 import { GetAllCustomersUseCase } from '../use-cases/Customer/GetAllCustomersUseCase';
@@ -24,14 +23,14 @@ class CustomerController {
     } = request.body
 
     const { userId } = response.locals.jwtPayload;
-  
+
     const prismaCustomerRepository = new PrismaCustomerRepository();
-  
+
     const createCustomerUseCase = new CreateCustomerUseCase(
       prismaCustomerRepository
     );
 
-    try {      
+    try {
       await createCustomerUseCase.execute({
         name,
         nickname,
@@ -52,7 +51,7 @@ class CustomerController {
         .status(500)
         .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
     }
-  
+
     return response.status(201).send();
   }
 
@@ -69,11 +68,11 @@ class CustomerController {
       address,
       phone
     } = request.body
-  
+
     const customerUuid = request.params.customerUuid
-  
+
     const prismaCustomerRepository = new PrismaCustomerRepository();
-  
+
     const updateCustomerUseCase = new UpdateCustomerUseCase(
       prismaCustomerRepository
     );
@@ -107,7 +106,7 @@ class CustomerController {
 
       return response.status(500).send();
     }
-  
+
     return response.status(200).send();
   }
 
@@ -115,13 +114,13 @@ class CustomerController {
     const { userId } = response.locals.jwtPayload;
 
     const prismaCustomerRepository = new PrismaCustomerRepository();
-  
+
     const getAllCustomersUseCase = new GetAllCustomersUseCase(
       prismaCustomerRepository
     );
-  
+
     const allCustomers = await getAllCustomersUseCase.execute(userId);
-  
+
     return response.status(200).json({ Customers: allCustomers });
   }
 
@@ -129,13 +128,13 @@ class CustomerController {
     const { userId } = response.locals.jwtPayload;
 
     const customerUuid = request.params.customerUuid
-  
+
     const prismaCustomerRepository = new PrismaCustomerRepository();
-  
+
     const deleteCustomerUseCase = new DeleteCustomerUseCase(
       prismaCustomerRepository
     );
-  
+
     try {
       await deleteCustomerUseCase.execute(userId, customerUuid);
     } catch (error) {
@@ -156,7 +155,7 @@ class CustomerController {
 
       return response.status(500).send();
     }
-  
+
     return response.status(200).send()
   }
 
@@ -164,13 +163,13 @@ class CustomerController {
     const { userId } = response.locals.jwtPayload;
 
     const customerUuid = request.params.customerUuid
-  
+
     const prismaCustomerRepository = new PrismaCustomerRepository();
-  
+
     const getCustomerUseCase = new GetCustomerUseCase(
       prismaCustomerRepository
     );
-  
+
     try {
       const customer = await getCustomerUseCase.execute(userId, customerUuid)
       return response.status(200).json({ Customer: customer });
@@ -187,14 +186,18 @@ class CustomerController {
     const prismaCustomerRepository = new PrismaCustomerRepository();
 
     const file = request.files;
-    const { delimiter } = request.query; 
+    const { userId, delimiter } = request.query;
+
+    if (!userId) {
+      return response.status(400).send("User ID not found");
+    }
 
     if (!file?.csv) {
       return response.status(500).json({ message: "No files uploaded" });
     }
 
     const { data } = file.csv as any;
-  
+
     const importCsvUseCase = new ImportCsvUseCase(
       prismaCustomerRepository,
     );
@@ -205,6 +208,7 @@ class CustomerController {
       costumers = await importCsvUseCase.execute(
         data,
         response,
+        parseInt(`${userId}`),
         delimiter ? `${delimiter}` : undefined
       );
     } catch (error) {
