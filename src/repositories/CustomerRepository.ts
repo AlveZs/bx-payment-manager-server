@@ -10,6 +10,7 @@ export interface CustomerCreateData {
   address?: string;
   phone?: string;
   userId: number;
+  Payments?: any;
 }
 
 export interface CustomerUpdateData {

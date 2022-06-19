@@ -124,7 +124,7 @@ export class PrismaCustomerRepository implements CustomerRepository {
         userId
       },
       include: {
-        Payments: {          
+        Payments: {
           orderBy: {
             date: 'desc',
           },

@@ -5,6 +5,7 @@ import { CustomerController } from './controllers/CustomerController';
 import { PaymentController } from './controllers/PaymentController';
 import { RefreshTokenController } from './controllers/RefreshTokenController';
 import { verifyToken } from './middlewares/VerifyToken';
+import { DashboardController } from './controllers/DashboardController';
 import fileUpload = require("express-fileupload");
 
 export const routes = express.Router()
@@ -13,6 +14,7 @@ const customerController = new CustomerController();
 const paymentController = new PaymentController();
 const authController = new AuthController();
 const refreshTokenController = new RefreshTokenController();
+const dashboardController = new DashboardController();
 
 
 routes.get('/', (req, res) => {
@@ -65,7 +67,7 @@ routes.get('/customers/:customerUuid/payments', paymentController.getByCustomer)
 
 routes.get('/payments', paymentController.getAll);
 
-routes.get('/dashboard', paymentController.getPaymentInfos);
+routes.get('/dashboard', dashboardController.getDashboardInfos);
 
 routes.post(
   '/import-csv',

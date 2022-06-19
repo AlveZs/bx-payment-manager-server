@@ -7,7 +7,6 @@ import { DeletePaymentUseCase } from '../use-cases/Payment/DeletePaymentUseCase'
 import { GetAllPaymentsByCustomerUseCase } from '../use-cases/Payment/GetAllPaymentsByCustomerUseCase';
 import { GetAllPaymentsUseCase } from '../use-cases/Payment/GetAllPaymentsUseCase';
 import { GetPaymentUseCase } from '../use-cases/Payment/GetPaymentUseCase';
-import { PaymentDashboardInfosUseCase } from '../use-cases/Payment/PaymentDashboardInfosUseCase';
 import { UpdatePaymentUseCase } from '../use-cases/Payment/UpdatePaymentUseCase';
 
 class PaymentController {
@@ -223,27 +222,6 @@ class PaymentController {
         return response.status(401).json({ message: error.message });
       }
 
-      return response
-        .status(500)
-        .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
-    }
-  }
-
-  async getPaymentInfos(request: Request, response: Response) {
-    const { userId } = response.locals.jwtPayload
-
-    let year = request.query?.year ? parseInt(request.query.year.toString()) : undefined;
-
-    const prismaPaymentRepository = new PrismaPaymentRepository();
-
-    const getDashboardInfosUseCase = new PaymentDashboardInfosUseCase(
-      prismaPaymentRepository
-    );
-
-    try {
-      const payments = await getDashboardInfosUseCase.execute(userId, year);
-      return response.status(200).json({ Infos: payments });
-    } catch (error) {
       return response
         .status(500)
         .json({ message: ERRORS_MESSAGES.INTERNAL_SERVER });
