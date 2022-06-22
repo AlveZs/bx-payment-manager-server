@@ -21,10 +21,12 @@ export class DashboardInfosUseCase {
     private customerRepository: CustomerRepository
   ) {}
 
-  async execute(userId: number, year?: number): Promise<DashboardInfos> {
+  async execute(userId: number, year?: number, month?: number): Promise<DashboardInfos> {
     const CURRENT_DATE = new Date();
     const payments = await this.paymentRepository.getAll(userId, year);
     const customers = await this.customerRepository.getAll(userId);
+    const currentMonth = month ? month - 1 : CURRENT_DATE.getMonth();
+    const currentYear = year ? year : CURRENT_DATE.getFullYear();
 
     let months: any = {}
 
@@ -38,8 +40,8 @@ export class DashboardInfosUseCase {
       const lastPayment = customer.Payments ? customer.Payments[0] : null;
       if (lastPayment) {
         const paymentDate = new Date(lastPayment.date);
-        return paymentDate.getMonth() !== CURRENT_DATE.getMonth() &&
-          paymentDate.getFullYear() === CURRENT_DATE.getFullYear()
+        return paymentDate.getMonth() !== currentMonth &&
+          paymentDate.getFullYear() === currentYear
       } else {
         return false;
       }
@@ -50,7 +52,7 @@ export class DashboardInfosUseCase {
     }, 0) || 0;
 
     const totalAmountCurrentMonth = payments?.filter(
-        payment => new Date(payment.date).getMonth() === new Date().getMonth()
+        payment => new Date(payment.date).getMonth() === currentMonth
       ).reduce((total, { value }) => {
         return total + Number(value)
       }, 0) || 0;

@@ -9,6 +9,7 @@ class DashboardController {
     const { userId } = response.locals.jwtPayload
 
     let year = request.query?.year ? parseInt(request.query.year.toString()) : undefined;
+    let month = request.query?.month ? parseInt(request.query.month.toString()) : undefined;
 
     const prismaPaymentRepository = new PrismaPaymentRepository();
     const prismaCustomerRepository = new PrismaCustomerRepository();
@@ -19,7 +20,7 @@ class DashboardController {
     );
 
     try {
-      const payments = await getDashboardInfosUseCase.execute(userId, year);
+      const payments = await getDashboardInfosUseCase.execute(userId, year, month);
       return response.status(200).json({ Infos: payments });
     } catch (error) {
       return response
