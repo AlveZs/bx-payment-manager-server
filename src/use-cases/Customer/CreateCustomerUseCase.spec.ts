@@ -9,6 +9,7 @@ const createCustomer = new CreateCustomerUseCase(
       getAll: jest.fn(),
       getByUuid: jest.fn(),
       update: jest.fn(),
+      createMultipleWithPayments: jest.fn(),
     },
 );
 

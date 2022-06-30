@@ -9,6 +9,8 @@ const registerUse = new RegisterUserUseCase(
       getByUsername: jest.fn(),
       getByUuid: jest.fn(),
       update: jest.fn(),
+      getUserByRefreshToken: jest.fn(),
+      updateRefreshTokens: jest.fn()
     },
 );
 
