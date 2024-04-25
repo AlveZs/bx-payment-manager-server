@@ -25,13 +25,19 @@ class RefreshTokenController {
     );
 
     try {
-      if (!cookies?.jwt) {
-        return response.sendStatus(401);
+      if (!cookies?.refreshToken) {
+        return response.status(401).json({ message: 'UNAUTHORIZED' });
       }
 
-      const refreshToken = cookies.jwt;
+      const refreshToken = cookies.refreshToken;
 
-      response.clearCookie('jwt', {
+      response.clearCookie('refreshToken', {
+        httpOnly: true,
+        sameSite: 'none',
+        secure: true
+      });
+
+      response.clearCookie('accessToken', {
         httpOnly: true,
         sameSite: 'none',
         secure: true
@@ -70,7 +76,7 @@ class RefreshTokenController {
           }
 
           if (error || (decoded && (foundUser.username !== decoded.userUsername))) {
-            return response.sendStatus(403);
+            return response.status(401).json({ message: 'UNAUTHORIZED' });
           }
 
           if (decoded) {
@@ -100,7 +106,14 @@ class RefreshTokenController {
 
             await updateRefreshTokenUseCase.execute(foundUser.uuid, tokensForUpdate);
 
-            response.cookie('jwt', newRefreshToken, {
+            response.cookie('accessToken', accessToken, {
+              httpOnly: true,
+              secure: true,
+              sameSite: 'none',
+              maxAge: 24 * 60 * 60 * 1000
+            });
+
+            response.cookie('refreshToken', newRefreshToken, {
               httpOnly: true,
               secure: true,
               sameSite: 'none',

@@ -3,15 +3,17 @@ import { verify } from "jsonwebtoken";
 
 function verifyToken(request: Request, response: Response, next: NextFunction) {
   const authHeader = <string>request.headers.authorization || <string>request.headers.Authorization;
+  const cookies = request.cookies;
+  let token = ''
 
-  if (!authHeader?.includes('Bearer')) {
-    return response.sendStatus(401);
+  if (authHeader?.includes('Bearer')) {
+    token = <string>authHeader.split(' ')[1];
+  } else if (cookies?.accessToken) {
+    token = cookies.accessToken;
   }
 
-  const token = authHeader ? <string>authHeader.split(' ')[1] : '';
-
   if (!token) {
-    return response.status(401).json({ message: "A token is required for authentication" });
+    return response.status(401).json({ message: "UNAUTHORIZED" });
   }
 
   verify(
@@ -19,7 +21,7 @@ function verifyToken(request: Request, response: Response, next: NextFunction) {
     <string>process.env.ACCESS_TOKEN_KEY,
     (err, decoded) => {
       if (err) {
-        return response.sendStatus(403);
+        return response.status(401).json({ message: "INVALID TOKEN" });
       }
       response.locals.jwtPayload = decoded;
       next();

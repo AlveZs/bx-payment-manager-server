@@ -23,13 +23,11 @@ export class LoginUseCase {
     private authRepository: AuthRepository
   ) {}
 
-  async execute(request: LoginUserUseCaseRequest, jwtCookie?: string) {
+  async execute(request: LoginUserUseCaseRequest, refreshTokenCookie?: string) {
     const {
       username,
       password,
     } = request;
-
-    let clearCookie = false;
 
     const requiredFieldsNull = [
       username,
@@ -66,19 +64,19 @@ export class LoginUseCase {
       );
 
       let newRefreshTokenArray =
-        !jwtCookie
-          ? existentUser.RefreshTokens?.map(token => token.id)
-          : existentUser.RefreshTokens?.filter(token => token.id !== jwtCookie).map(token => token.id);
+        refreshTokenCookie
+          ? existentUser.RefreshTokens?.filter(
+              token => token.id !== refreshTokenCookie
+            ).map(token => token.id)
+          : existentUser.RefreshTokens?.map(token => token.id);
 
-      if (jwtCookie) {
-        const refreshToken = jwtCookie;
-        const foundToken = await this.authRepository.getUserByRefreshToken(refreshToken);
+      if (refreshTokenCookie) {
+        const refreshToken = refreshTokenCookie;
+        const foundByToken = await this.authRepository.getUserByRefreshToken(refreshToken);
 
-        if (!foundToken) {
+        if (!foundByToken) {
           newRefreshTokenArray = [];
         }
-
-        clearCookie = true;
       }
 
       const tokensForUpdate = newRefreshTokenArray ?
@@ -91,7 +89,6 @@ export class LoginUseCase {
       );
 
       return {
-        clearCookie,
         newRefreshToken,
         accessToken,
         userName: existentUser.name,

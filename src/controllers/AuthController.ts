@@ -27,17 +27,30 @@ class AuthController {
       const loginData = await loginUseCase.execute({
         username,
         password
-      }, cookies?.jwt);
+      }, cookies?.refreshToken);
 
-      if (loginData.clearCookie) {
-        response.clearCookie('jwt', {
+      if (cookies?.refreshToken) {
+        response.clearCookie('refreshToken', {
           httpOnly: true,
           secure: true,
           sameSite: 'none'
         });
       }
 
-      response.cookie('jwt', loginData.newRefreshToken, {
+      response.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      });
+
+      response.cookie('refreshToken', loginData.newRefreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000
+      });
+
+      response.cookie('accessToken', loginData.accessToken, {
         httpOnly: true,
         secure: true,
         sameSite: 'none',
@@ -70,7 +83,7 @@ class AuthController {
 
   async logout(request: Request, response: Response) {
     const cookies = request.cookies;
-    if (!cookies?.jwt) {
+    if (!cookies?.refreshToken) {
       return response.sendStatus(204);
     }
 
@@ -85,12 +98,14 @@ class AuthController {
     );
 
     try {
-      const refreshToken = cookies.jwt;
+      const refreshToken = cookies.refreshToken;
 
       const foundUser = await getUserByRefreshTokenUseCase.execute(refreshToken);
 
+      response.clearCookie('refreshToken', { httpOnly: true, sameSite: 'none', secure: true });
+      response.clearCookie('accessToken', { httpOnly: true, sameSite: 'none', secure: true });
+
       if (!foundUser) {
-        response.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
         return response.sendStatus(204);
       }
 
@@ -101,7 +116,6 @@ class AuthController {
         updateRefreshTokenUseCase.execute(foundUser.uuid, newRefreshTokenArray);
       }
 
-      response.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: true });
       response.sendStatus(204);
     } catch (error) {
       console.log(error);
