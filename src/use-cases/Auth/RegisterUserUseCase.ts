@@ -23,7 +23,8 @@ export class RegisterUserUseCase {
       name,
       username,
       password,
-      confirmPassword
+      confirmPassword,
+      email
     } = request;
 
     const requiredFieldsNull = [
@@ -54,6 +55,7 @@ export class RegisterUserUseCase {
       name,
       username,
       password: encryptedPassword,
+      email,
     });
   }
 }
