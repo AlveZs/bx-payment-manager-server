@@ -1,3 +1,4 @@
+import { CustomerFilter } from "../interfaces/CustomerFilter";
 import { Customer } from "../model/Customer";
 
 export interface CustomerCreateData {
@@ -30,5 +31,5 @@ export interface CustomerRepository {
   update: (customerUuid: string, data: CustomerUpdateData) => Promise<void>;
   delete: (customerUuid: string) => Promise<void>;
   getByUuid: (customerUuid: string) => Promise<Customer | null>;
-  getAll: (userId: number) => Promise<Customer[]>;
+  getAll: (userId: number, filter: CustomerFilter) => Promise<Customer[]>;
 }

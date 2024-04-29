@@ -8,6 +8,7 @@ import {
 } from "../CustomerRepository";
 import { ERRORS_MESSAGES } from "../../constants/Errors";
 import { PaymentCreateData } from "../PaymentRepository";
+import { CustomerFilter } from "../../interfaces/CustomerFilter";
 
 export class PrismaCustomerRepository implements CustomerRepository {
   async create({
@@ -118,17 +119,64 @@ export class PrismaCustomerRepository implements CustomerRepository {
     return customer;
   }
 
-  async getAll(userId: number): Promise<Customer[]> {
+  async getAll(userId: number, filter: CustomerFilter): Promise<Customer[]> {
+    let whereCondition: any = {};
+    const currentDate = new Date();
+    const dateComparasion: any = {
+      date: {
+        gte: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1
+          ),
+        lte: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth() + 1,
+          0
+        ),
+      }
+    };
+
+    if (filter.onlyActives) {
+      whereCondition.deleted = null
+    }
+
+    if (filter.onlyPaid) {
+      whereCondition.Payments = {
+        some: {
+          ...dateComparasion
+        }
+      }
+    }
+
+    if (filter.onlyDebtors) {
+      whereCondition.Payments = {
+        none: {
+          ...dateComparasion
+        }
+      }
+    }
+
+    if (filter.nameContains) {
+      whereCondition.name = {
+        contains: filter.nameContains
+      }
+    }
+
     const allCostumers = await prisma.customer.findMany({
       where: {
+        ...whereCondition,
         userId
       },
       include: {
         Payments: {
+          select: {
+            uuid: true,
+          },
           orderBy: {
             date: 'desc',
           },
-          take: 1,
+          where: dateComparasion,
         },
       },
     });

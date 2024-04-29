@@ -112,6 +112,14 @@ class CustomerController {
 
   async getAll(request: Request, response: Response) {
     const { userId } = response.locals.jwtPayload;
+    let onlyDebtors = request.query?.onlyDebtors ?
+      request.query?.onlyDebtors === 'true' : undefined;
+    let onlyActives = request.query?.onlyActives ?
+      request.query?.onlyActives === 'true' : undefined;
+    let onlyPaid = request.query?.onlyPaid ?
+      request.query?.onlyPaid === 'true' : undefined;
+    let nameContains = request.query?.nameContains ? 
+      request.query?.nameContains.toString() : undefined;
 
     const prismaCustomerRepository = new PrismaCustomerRepository();
 
@@ -119,7 +127,15 @@ class CustomerController {
       prismaCustomerRepository
     );
 
-    const allCustomers = await getAllCustomersUseCase.execute(userId);
+    const allCustomers = await getAllCustomersUseCase.execute(
+      userId,
+      {
+        onlyDebtors,
+        onlyActives,
+        onlyPaid,
+        nameContains
+      }
+    );
 
     return response.status(200).json({ Customers: allCustomers });
   }
@@ -183,14 +199,11 @@ class CustomerController {
   }
 
   async importFromCsv(request: Request, response: Response) {
+    const { userId } = response.locals.jwtPayload;
     const prismaCustomerRepository = new PrismaCustomerRepository();
 
     const file = request.files;
-    const { userId, delimiter } = request.query;
-
-    if (!userId) {
-      return response.status(400).send("User ID not found");
-    }
+    const { delimiter } = request.query;
 
     if (!file?.csv) {
       return response.status(500).json({ message: "No files uploaded" });

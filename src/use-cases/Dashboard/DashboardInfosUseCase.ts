@@ -24,7 +24,7 @@ export class DashboardInfosUseCase {
   async execute(userId: number, year?: number, month?: number): Promise<DashboardInfos> {
     const CURRENT_DATE = new Date();
     const payments = await this.paymentRepository.getAll(userId, year);
-    const customers = await this.customerRepository.getAll(userId);
+    const customers = await this.customerRepository.getAll(userId, {});
     const currentMonth = month ? month - 1 : CURRENT_DATE.getMonth();
     const currentYear = year ? year : CURRENT_DATE.getFullYear();
 
