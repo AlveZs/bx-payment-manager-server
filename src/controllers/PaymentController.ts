@@ -178,7 +178,11 @@ class PaymentController {
 
     try {
       const payment = await getPaymentUseCase.execute(userId, paymentUuid)
-      return response.status(200).json({ Payment: payment });
+      return response.status(200).json({
+        Payment: {
+          ...payment,
+          value: String(payment.value).replace('.', ','),
+        }});
     } catch (error) {
       if (error instanceof Error) {
         let errorStatus = 400;
